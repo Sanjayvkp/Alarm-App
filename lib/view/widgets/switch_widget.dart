@@ -14,11 +14,10 @@ class SwitchWidget extends StatelessWidget {
           Icons.circle,
           color: Colors.white,
         )),
-        trackOutlineColor:
-            const MaterialStatePropertyAll(Colors.grey),
+        trackOutlineColor: const MaterialStatePropertyAll(Colors.grey),
         activeColor: Colors.red,
         thumbColor: MaterialStateProperty.all(Colors.white),
-        activeTrackColor: Colors.black,
+        activeTrackColor: Colors.blue,
         inactiveTrackColor: Colors.grey,
         value: value,
         onChanged: onChanged,
