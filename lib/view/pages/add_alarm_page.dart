@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:alarm_app/view/widgets/elevated_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class AddAlarmPage extends StatefulWidget {
   const AddAlarmPage({super.key});
@@ -20,7 +24,45 @@ class AddAlarmPageState extends State<AddAlarmPage> {
       setState(() {
         _selectedTime = picked;
       });
+      _scheduleAlarm(context);
     }
+  }
+
+  Future<void> _scheduleAlarm(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final tz.TZDateTime scheduledTime = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'alarm_channel',
+      'Alarm Notification',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('notification_sound'),
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      5,
+      'Alarm',
+      'Time to wake up!',
+      scheduledTime,
+      platformChannelSpecifics,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
   }
 
   @override
@@ -41,12 +83,15 @@ class AddAlarmPageState extends State<AddAlarmPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _selectedTime.format(context),
-              style: const TextStyle(
-                  fontSize: 40,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+            InkWell(
+              onTap: () => _selectTime(context),
+              child: Text(
+                _selectedTime.format(context),
+                style: const TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 32),
           ],
@@ -69,7 +114,9 @@ class AddAlarmPageState extends State<AddAlarmPage> {
             Expanded(
               child: ElevatedButtonWidget(
                 text: 'SAVE',
-                onPressed: () {},
+                onPressed: () {
+                  _scheduleAlarm(context);
+                },
               ),
             ),
           ],
