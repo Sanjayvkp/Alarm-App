@@ -2,15 +2,16 @@ import 'package:alarm_app/controller/provider/alarm_provider.dart';
 import 'package:alarm_app/controller/services/api_services.dart';
 import 'package:alarm_app/model/alarm_model.dart';
 import 'package:alarm_app/view/widgets/elevated_button_widget.dart';
+import 'package:alarm_app/view/widgets/text_field_widget.dart';
 import 'package:alarm_app/view/widgets/time_widget.dart';
 import 'package:alarm_app/view/widgets/weather_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
 final selectedTimeProvider = StateProvider<TimeOfDay>((ref) => TimeOfDay.now());
 
-class AddAlarmPage extends ConsumerWidget {
+class AddAlarmPage extends HookConsumerWidget {
   const AddAlarmPage({super.key});
 
   Future<void> selectTime(BuildContext context, WidgetRef ref) async {
@@ -23,7 +24,7 @@ class AddAlarmPage extends ConsumerWidget {
           pickedTime; // Update selected time
       ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
             time: formatTimeOfDay(pickedTime),
-            title: 'Alarm',
+            title: ref.read(alarmProvider.notifier).titleController.text,
           ));
     }
   }
@@ -37,7 +38,8 @@ class AddAlarmPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final apiServices = ApiServices(); // Create an instance of ApiServices
+    final apiServices = ApiServices();
+    final data = ref.watch(alarmProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -82,6 +84,14 @@ class AddAlarmPage extends ConsumerWidget {
                   ref.read(selectedTimeProvider.notifier).state.format(context),
             ),
           )),
+          const SizedBox(
+            height: 32,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: TextFieldWidget(
+                controller: data.titleController, text: 'Add a label'),
+          ),
         ],
       ),
       bottomNavigationBar: Padding(

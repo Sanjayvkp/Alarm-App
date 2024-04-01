@@ -2,6 +2,7 @@ import 'package:alarm_app/model/alarm_entity.dart';
 import 'package:alarm_app/model/alarm_model.dart';
 import 'package:alarm_app/objectbox/object_box.dart';
 import 'package:alarm_app/view/pages/add_alarm_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -26,29 +27,35 @@ class Alarm extends _$Alarm {
   }
 
   @override
-  List<AlarmEntity> build() {
+  List<AlarmModel> build() {
     return [];
   }
 
-  Future<void> addAlarm(AlarmModel alarm) async {
-    try {
-      final alarmEntity = AlarmEntity(time: alarm.time, title: alarm.title);
-      await scheduleAlarm();
-      box.put(alarmEntity);
-      // ignore: empty_catches
-    } catch (e) {}
+  final titleController = TextEditingController();
+
+  void addAlarm(AlarmModel alarm) async {
+    final alarmEntity = AlarmEntity(
+      time: alarm.time.toString(),
+      title: alarm.title,
+    );
+    await scheduleAlarm();
+    box.put(alarmEntity);
+
+    getAlarm();
   }
 
-  Stream<List<AlarmModel>> getAlarm() async* {
+  void getAlarm() {
     final alarms = box.getAll();
     final data = [
-      for (var alarm in alarms) AlarmModel(time: alarm.time, title: alarm.title)
+      for (var alarm in alarms)
+        AlarmModel(id: alarm.id, time: alarm.time, title: alarm.title)
     ];
-    yield data;
+    state = data;
   }
 
-  Future<void> removeAll() async {
-    box.removeAll();
+  void deleteAlarm(int id) {
+    box.remove(id);
+    getAlarm();
   }
 
   Future<void> scheduleAlarm() async {
@@ -79,7 +86,7 @@ class Alarm extends _$Alarm {
     await flutterLocalNotificationsPlugin.zonedSchedule(
       5,
       'Alarm',
-      'Time to wake up!',
+      ref.read(alarmProvider.notifier).titleController.text,
       scheduledTime,
       platformChannelSpecifics,
       androidAllowWhileIdle: true,
