@@ -1,12 +1,11 @@
-class Alarm {
-  final int id;
+class AlarmModel {
+  final String time;
   final String title;
-  final String
-      time; // You can store time as a string or DateTime object, depending on your preference
+  
 
-  Alarm({
-    required this.id,
-    required this.title,
+  AlarmModel({
     required this.time,
+    required this.title,
+    
   });
 }

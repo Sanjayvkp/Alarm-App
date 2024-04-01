@@ -1,12 +1,35 @@
+import 'package:alarm_app/controller/provider/alarm_provider.dart';
 import 'package:alarm_app/controller/services/api_services.dart';
+import 'package:alarm_app/model/alarm_model.dart';
 import 'package:alarm_app/view/widgets/elevated_button_widget.dart';
+import 'package:alarm_app/view/widgets/time_widget.dart';
+import 'package:alarm_app/view/widgets/weather_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 final selectedTimeProvider = StateProvider<TimeOfDay>((ref) => TimeOfDay.now());
 
 class AddAlarmPage extends ConsumerWidget {
   const AddAlarmPage({super.key});
+
+  Future<void> selectTime(BuildContext context, WidgetRef ref) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: ref.watch(selectedTimeProvider),
+    );
+    if (pickedTime != null) {
+      ref.read(selectedTimeProvider.notifier).state =
+          pickedTime; // Update selected time
+    }
+  }
+
+  String formatTimeOfDay(TimeOfDay tod) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+    final format = DateFormat.jm(); //"6:00 AM"
+    return format.format(dt);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,73 +64,33 @@ class AddAlarmPage extends ConsumerWidget {
               } else {
                 final currentWeather =
                     snapshot.data; // Get the current weather data
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    height: 60,
-                    width: 120,
-                    decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                              blurRadius: 2,
-                              color: Colors.white.withOpacity(.50)),
-                        ],
-                        border: Border.all(color: Colors.grey.withOpacity(.20)),
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Center(
-                      child: Text(
-                        '🌦️$currentWeather ℃', // Display current weather
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
+                return WeatherWidget(weather: currentWeather!);
               }
             },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 120),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 120),
-              child: Container(
-                height: 200,
-                width: 200,
-                decoration: BoxDecoration(
-                    color: Colors.black,
-                    border: Border.all(color: Colors.grey, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                          blurRadius: 3, color: Colors.white.withOpacity(.50))
-                    ],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Center(
-                  child: Text(
-                    ref
-                        .read(selectedTimeProvider.notifier)
-                        .state
-                        .format(context),
-                    style: const TextStyle(
-                      fontSize: 35,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
+              child: InkWell(
+            onTap: () => selectTime(context, ref),
+            child: TimeWidget(
+              time:
+                  ref.read(selectedTimeProvider.notifier).state.format(context),
             ),
-          ),
+          )),
         ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: ElevatedButtonWidget(
           text: 'SET',
-          onPressed: () {},
+          onPressed: () {
+            ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
+                  time: formatTimeOfDay(
+                      ref.read(selectedTimeProvider.notifier).state),
+                  title: 'Alarm',
+                ));
+            Navigator.pop(context);
+          },
         ),
       ),
     );

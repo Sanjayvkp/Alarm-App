@@ -1,33 +1,33 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:alarm_app/model/alarm_entity.dart';
 import 'package:alarm_app/model/alarm_model.dart';
+import 'package:alarm_app/objectbox/object_box.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+part 'alarm_provider.g.dart';
 
-final alarmProvider = ChangeNotifierProvider((ref) => AlarmProvider());
+@riverpod
+class Alarm extends _$Alarm {
+  final box = ObjectBox.instance.alarmBox;
 
-class AlarmProvider extends ChangeNotifier {
-  final List<Alarm> _alarms = [];
-
-  List<Alarm> get alarms => _alarms;
-
-  void addAlarm(Alarm alarm) {
-    _alarms.add(alarm);
-
-    notifyListeners();
+  @override
+  List<AlarmEntity> build() {
+    return [];
   }
 
-  void removeAlarm(Alarm alarm) {
-    _alarms.remove(alarm);
-    notifyListeners();
+  Future<void> addAlarm(AlarmModel alarm) async {
+    final alarmEntity = AlarmEntity(time: alarm.time, title: alarm.title);
+    box.put(alarmEntity);
   }
 
-  void updateAlarm(Alarm oldAlarm, Alarm newAlarm) {
-    final index = _alarms.indexOf(oldAlarm);
-    if (index != -1) {
-      _alarms[index] = newAlarm;
-      notifyListeners();
-    }
+  Stream<List<AlarmModel>> getAlarm() async* {
+    final alarms = box.getAll();
+    final data = [
+      for (var alarm in alarms) AlarmModel(time: alarm.time, title: alarm.title)
+    ];
+    yield data;
+  }
+
+  Future<void> removeAll() async {
+    box.removeAll();
   }
 }

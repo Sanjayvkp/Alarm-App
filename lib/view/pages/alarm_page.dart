@@ -5,14 +5,14 @@ import 'package:alarm_app/view/widgets/clock_widget.dart';
 import 'package:alarm_app/view/widgets/alarm_list_widget.dart';
 import 'package:alarm_app/view/pages/add_alarm_page.dart';
 
-final alarmListProvider = StateProvider<List<Alarm>>((ref) => []);
+final alarmListProvider = StateProvider<List<AlarmModel>>((ref) => []);
 
 class AlarmPage extends ConsumerWidget {
   const AlarmPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Alarm> alarms = ref.watch(alarmListProvider);
+    final List<AlarmModel> alarms = ref.watch(alarmListProvider);
     final TimeOfDay time = TimeOfDay.now();
 
     return Scaffold(
@@ -31,7 +31,7 @@ class AlarmPage extends ConsumerWidget {
                   color: Colors.white),
             ),
             Text(
-              '${alarms.length} Active alarms',
+              'Active alarms',
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w300,
@@ -50,22 +50,15 @@ class AlarmPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
           child: Column(
             children: [
-              const ClockWidget(),
-              const SizedBox(height: 32),
-              Text(
-                time.format(context),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 32),
-              AlarmWidget(alarms: alarms),
+              ClockWidget(),
+              SizedBox(height: 32),
+              SizedBox(height: 32),
+              AlarmWidget(),
             ],
           ),
         ),
