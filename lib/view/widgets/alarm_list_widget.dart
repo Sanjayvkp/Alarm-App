@@ -38,7 +38,7 @@ class AlarmWidget extends HookConsumerWidget {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        'Monday', // Display the day of the alarm
+                        'Everyday', // Display the day of the alarm
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w300,

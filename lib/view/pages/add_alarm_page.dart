@@ -21,6 +21,10 @@ class AddAlarmPage extends ConsumerWidget {
     if (pickedTime != null) {
       ref.read(selectedTimeProvider.notifier).state =
           pickedTime; // Update selected time
+      ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
+            time: formatTimeOfDay(pickedTime),
+            title: 'Alarm',
+          ));
     }
   }
 
@@ -71,6 +75,7 @@ class AddAlarmPage extends ConsumerWidget {
           const SizedBox(height: 120),
           Center(
               child: InkWell(
+            borderRadius: BorderRadius.circular(90),
             onTap: () => selectTime(context, ref),
             child: TimeWidget(
               time:
@@ -84,11 +89,7 @@ class AddAlarmPage extends ConsumerWidget {
         child: ElevatedButtonWidget(
           text: 'SET',
           onPressed: () {
-            ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
-                  time: formatTimeOfDay(
-                      ref.read(selectedTimeProvider.notifier).state),
-                  title: 'Alarm',
-                ));
+            // selectTime(context, ref);
             Navigator.pop(context);
           },
         ),

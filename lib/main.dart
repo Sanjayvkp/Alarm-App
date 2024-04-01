@@ -9,6 +9,7 @@ import 'package:timezone/timezone.dart' as tz;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ObjectBox.create();
+
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   const AndroidInitializationSettings initializationSettingsAndroid =
