@@ -1,22 +1,20 @@
 import 'package:alarm_app/model/alarm_model.dart';
-import 'package:alarm_app/view/pages/add_alarm_page.dart';
-import 'package:alarm_app/view/widgets/alarm_list_widget.dart';
-import 'package:alarm_app/view/widgets/clock_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:alarm_app/view/widgets/clock_widget.dart';
+import 'package:alarm_app/view/widgets/alarm_list_widget.dart';
+import 'package:alarm_app/view/pages/add_alarm_page.dart';
 
-class AlarmPage extends StatefulWidget {
+final alarmListProvider = StateProvider<List<Alarm>>((ref) => []);
+
+class AlarmPage extends ConsumerWidget {
   const AlarmPage({super.key});
 
   @override
-  AlarmPageState createState() => AlarmPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<Alarm> alarms = ref.watch(alarmListProvider);
+    final TimeOfDay time = TimeOfDay.now();
 
-class AlarmPageState extends State<AlarmPage> {
-  List<Alarm> alarms = []; // List of alarms
-
-  @override
-  Widget build(BuildContext context) {
-    TimeOfDay time = TimeOfDay.now();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -33,7 +31,7 @@ class AlarmPageState extends State<AlarmPage> {
                   color: Colors.white),
             ),
             Text(
-              '6 Active alarms',
+              '${alarms.length} Active alarms',
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w300,
@@ -43,12 +41,13 @@ class AlarmPageState extends State<AlarmPage> {
         ),
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.more_vert,
-                size: 30,
-                color: Colors.white,
-              ))
+            onPressed: () {},
+            icon: const Icon(
+              Icons.more_vert,
+              size: 30,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -57,9 +56,7 @@ class AlarmPageState extends State<AlarmPage> {
           child: Column(
             children: [
               const ClockWidget(),
-              const SizedBox(
-                height: 32,
-              ),
+              const SizedBox(height: 32),
               Text(
                 time.format(context),
                 style: const TextStyle(
@@ -67,10 +64,8 @@ class AlarmPageState extends State<AlarmPage> {
                     fontSize: 30,
                     fontWeight: FontWeight.w500),
               ),
-              const SizedBox(
-                height: 32,
-              ),
-              const AlarmWidget(),
+              const SizedBox(height: 32),
+              AlarmWidget(alarms: alarms),
             ],
           ),
         ),
@@ -79,11 +74,12 @@ class AlarmPageState extends State<AlarmPage> {
         backgroundColor: Colors.blue,
         shape: const CircleBorder(),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return const AddAlarmPage();
-            },
-          ));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddAlarmPage(),
+            ),
+          );
         },
         child: const Icon(
           Icons.add,

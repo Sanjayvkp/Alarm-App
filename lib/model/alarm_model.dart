@@ -1,7 +1,12 @@
 class Alarm {
   final int id;
-  final String label;
-  final DateTime time;
+  final String title;
+  final String
+      time; // You can store time as a string or DateTime object, depending on your preference
 
-  Alarm({required this.id, required this.label, required this.time});
+  Alarm({
+    required this.id,
+    required this.title,
+    required this.time,
+  });
 }

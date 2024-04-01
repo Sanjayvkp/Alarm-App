@@ -1,125 +1,127 @@
-// ignore_for_file: use_build_context_synchronously
-
+import 'package:alarm_app/controller/provider/alarm_provider.dart';
+import 'package:alarm_app/controller/services/api_services.dart';
+import 'package:alarm_app/model/alarm_model.dart';
 import 'package:alarm_app/view/widgets/elevated_button_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddAlarmPage extends StatefulWidget {
+final selectedTimeProvider = StateProvider<TimeOfDay>((ref) => TimeOfDay.now());
+
+class AddAlarmPage extends ConsumerWidget {
   const AddAlarmPage({super.key});
 
   @override
-  AddAlarmPageState createState() => AddAlarmPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTime = ref.watch(selectedTimeProvider);
+    final apiServices = ApiServices(); // Create an instance of ApiServices
 
-class AddAlarmPageState extends State<AddAlarmPage> {
-  TimeOfDay _selectedTime = TimeOfDay.now();
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-      _scheduleAlarm(context);
-    }
-  }
-
-  Future<void> _scheduleAlarm(BuildContext context) async {
-    final DateTime now = DateTime.now();
-    final tz.TZDateTime scheduledTime = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
-    );
-
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'alarm_channel',
-      'Alarm Notification',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      sound: RawResourceAndroidNotificationSound('notification_sound'),
-    );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      5,
-      'Alarm',
-      'Time to wake up!',
-      scheduledTime,
-      platformChannelSpecifics,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.black,
-        toolbarHeight: 60,
+        toolbarHeight: 90,
         title: const Text(
           'SET ALARM',
           style: TextStyle(
-              fontSize: 22, fontWeight: FontWeight.w400, color: Colors.white),
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            InkWell(
-              onTap: () => _selectTime(context),
-              child: Text(
-                _selectedTime.format(context),
-                style: const TextStyle(
-                    fontSize: 40,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FutureBuilder<String>(
+            future:
+                apiServices.getCurrentWeather(), // Fetch current weather data
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                final currentWeather =
+                    snapshot.data; // Get the current weather data
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    height: 60,
+                    width: 120,
+                    decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                              blurRadius: 2,
+                              color: Colors.white.withOpacity(.50)),
+                        ],
+                        border: Border.all(color: Colors.grey.withOpacity(.20)),
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Center(
+                      child: Text(
+                        '🌦️$currentWeather ℃', // Display current weather
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+          const SizedBox(height: 32),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 120),
+              child: Container(
+                height: 200,
+                width: 200,
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    border: Border.all(color: Colors.grey, width: 4),
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 3, color: Colors.white.withOpacity(.50))
+                    ],
+                    borderRadius: BorderRadius.circular(100)),
+                child: Center(
+                  child: Text(
+                    ref
+                        .read(selectedTimeProvider.notifier)
+                        .state
+                        .format(context),
+                    style: const TextStyle(
+                      fontSize: 35,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ElevatedButtonWidget(
-                text: 'SET',
-                onPressed: () => _selectTime(context),
-              ),
-            ),
-            const SizedBox(
-              width: 24,
-            ),
-            Expanded(
-              child: ElevatedButtonWidget(
-                text: 'SAVE',
-                onPressed: () {
-                  _scheduleAlarm(context);
-                },
-              ),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ElevatedButtonWidget(
+          text: 'SET',
+          onPressed: () async {
+            // Add the selected time as a new alarm
+            final alarm = Alarm(
+              id: DateTime.now().millisecondsSinceEpoch,
+              time: selectedTime.format(context),
+              title: 'Alarm',
+            );
+
+            ref.read(alarmProvider).addAlarm(alarm);
+
+            Navigator.pop(context);
+          },
         ),
       ),
     );
