@@ -1,20 +1,14 @@
-import 'package:alarm_app/model/alarm_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:alarm_app/view/widgets/clock_widget.dart';
 import 'package:alarm_app/view/widgets/alarm_list_widget.dart';
 import 'package:alarm_app/view/pages/add_alarm_page.dart';
 
-final alarmListProvider = StateProvider<List<AlarmModel>>((ref) => []);
-
 class AlarmPage extends ConsumerWidget {
   const AlarmPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<AlarmModel> alarms = ref.watch(alarmListProvider);
-    final TimeOfDay time = TimeOfDay.now();
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
