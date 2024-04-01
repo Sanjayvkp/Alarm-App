@@ -20,12 +20,7 @@ class AddAlarmPage extends HookConsumerWidget {
       initialTime: ref.watch(selectedTimeProvider),
     );
     if (pickedTime != null) {
-      ref.read(selectedTimeProvider.notifier).state =
-          pickedTime; // Update selected time
-      ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
-            time: formatTimeOfDay(pickedTime),
-            title: ref.read(alarmProvider.notifier).titleController.text,
-          ));
+      ref.read(selectedTimeProvider.notifier).state = pickedTime;
     }
   }
 
@@ -100,6 +95,11 @@ class AddAlarmPage extends HookConsumerWidget {
           text: 'SET',
           onPressed: () {
             // selectTime(context, ref);
+            ref.read(alarmProvider.notifier).addAlarm(AlarmModel(
+                  time: formatTimeOfDay(
+                      ref.read(selectedTimeProvider.notifier).state),
+                  title: ref.read(alarmProvider.notifier).titleController.text,
+                ));
             Navigator.pop(context);
           },
         ),
