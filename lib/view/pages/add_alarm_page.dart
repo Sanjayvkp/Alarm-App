@@ -1,6 +1,4 @@
-import 'package:alarm_app/controller/provider/alarm_provider.dart';
 import 'package:alarm_app/controller/services/api_services.dart';
-import 'package:alarm_app/model/alarm_model.dart';
 import 'package:alarm_app/view/widgets/elevated_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +10,6 @@ class AddAlarmPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedTime = ref.watch(selectedTimeProvider);
     final apiServices = ApiServices(); // Create an instance of ApiServices
 
     return Scaffold(
@@ -110,18 +107,7 @@ class AddAlarmPage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: ElevatedButtonWidget(
           text: 'SET',
-          onPressed: () async {
-            // Add the selected time as a new alarm
-            final alarm = Alarm(
-              id: DateTime.now().millisecondsSinceEpoch,
-              time: selectedTime.format(context),
-              title: 'Alarm',
-            );
-
-            ref.read(alarmProvider).addAlarm(alarm);
-
-            Navigator.pop(context);
-          },
+          onPressed: () {},
         ),
       ),
     );
